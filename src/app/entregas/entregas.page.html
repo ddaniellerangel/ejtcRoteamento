@@ -1,0 +1,13 @@
+<app-header-voltar titulo="Entregas"></app-header-voltar>
+
+<ion-content>
+    <ion-list>
+        <ion-item *ngFor="let entrega of listEntregas">
+          <ion-label> {{ entrega.endereco.cliente.nome }} - {{ entrega.endereco.rua }} </ion-label>
+          <app-button-update></app-button-update>
+          <app-button-delete></app-button-delete>
+        </ion-item>
+      </ion-list>
+
+    <app-button-add routerLink="/"></app-button-add>
+</ion-content>
