@@ -11,6 +11,7 @@ import { ClienteService } from 'src/services/domain/cliente.service';
 import { HttpClientModule } from '@angular/common/http';
 import { EntregaService } from 'src/services/domain/entrega.service';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
+import { DistanceMatrixService } from 'src/services/distanceMatrix.service';
 
 @NgModule({
   declarations: [AppComponent],
