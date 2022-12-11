@@ -11,7 +11,7 @@ import { ClienteService } from 'src/services/domain/cliente.service';
 import { HttpClientModule } from '@angular/common/http';
 import { EntregaService } from 'src/services/domain/entrega.service';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
-import { DistanceMatrixService } from 'src/services/distanceMatrix.service';
+import { RotaService } from 'src/services/domain/rota.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -25,6 +25,7 @@ import { DistanceMatrixService } from 'src/services/distanceMatrix.service';
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy}, 
     ClienteService,
     EntregaService,
+    RotaService,
     Geolocation
 ],
   bootstrap: [AppComponent],

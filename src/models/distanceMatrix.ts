@@ -4,6 +4,6 @@ export interface DistanceMatrix{
     foiDestino : Boolean;
     isEscritorio : Boolean;
     id_DistanceMatrix : number;
-    verticeOrigem : number;
-    verticeDestino : number;
+    id_verticeOrigem : number;
+    id_verticeDestino : number;
 }

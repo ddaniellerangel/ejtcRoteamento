@@ -25,4 +25,8 @@ export class EntregaService {
         return this.http.get<Entrega[]>(`${API_CONFIG.baseUrl}/entregas`);
     }
 
+    findByRota(rota_id: number) : Observable<Entrega[]> {
+        return this.http.get<Entrega[]>(`${API_CONFIG.baseUrl}/entregas/findByRota/`+rota_id);
+    }
+
 }

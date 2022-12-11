@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { DistanceMatrix } from 'src/models/distanceMatrix';
+import { Entrega } from 'src/models/entrega';
+import { Rota } from 'src/models/rota';
 import { DistanceMatrixService } from 'src/services/distanceMatrix.service';
+import { EntregaService } from 'src/services/domain/entrega.service';
+import { RotaService } from 'src/services/domain/rota.service';
 
 declare var google;
 
@@ -14,14 +18,19 @@ export class RotaPage implements OnInit {
 
   distanceMatrixService = new google.maps.DistanceMatrixService();
   directionsService = new google.maps.DirectionsService();
-  directionsDisplay = new google.maps.DirectionsRenderer({draggable: true});
-  map : any;
+  directionsDisplay = new google.maps.DirectionsRenderer({ draggable: true });
+  map: any;
   startPosition: any;
   originPosition: any;
   destinationPosition: string;
 
-  constructor(private geolocation: Geolocation) { }
-  carregaMapa(){
+  listRotas: Rota[];
+  listEntregas: Entrega[];
+
+  listMatrix: Array<DistanceMatrix> = [];
+
+  constructor(private geolocation: Geolocation, public rotaService: RotaService, public entregaService: EntregaService) { }
+  carregaMapa() {
 
     this.geolocation.getCurrentPosition()
       .then((resp) => {
@@ -31,10 +40,10 @@ export class RotaPage implements OnInit {
           zoom: 18,
           center: this.startPosition
         }
-  
+
         this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
         this.directionsDisplay.setMap(this.map);
-  
+
         const marker = new google.maps.Marker({
           position: this.startPosition,
           map: this.map
@@ -42,28 +51,28 @@ export class RotaPage implements OnInit {
 
       }).catch((error) => {
         //console.log('Erro ao recuperar sua posição', error);
-        const ejtc = new google.maps.LatLng(-20.8410106,-41.1169916);
+        const ejtc = new google.maps.LatLng(-20.8410106, -41.1169916);
 
         const mapOptions = {
           zoom: 18,
           center: ejtc
         }
-  
+
         this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
         this.directionsDisplay.setMap(this.map);
-  
+
         const marker = new google.maps.Marker({
           position: ejtc,
           map: this.map
         });
       });
-    
+
   }
 
   calculateRoute() {
-    this.destinationPosition = new google.maps.LatLng(-20.8410106,-41.1169916);
-    this.originPosition = new google.maps.LatLng(-20.8410106,-41.1169916);
+    this.destinationPosition = new google.maps.LatLng(-20.8410106, -41.1169916);
+    this.originPosition = new google.maps.LatLng(-20.8410106, -41.1169916);
     if (this.destinationPosition && this.originPosition) {
       const request = {
         // Pode ser uma coordenada (LatLng), uma string ou um lugar
@@ -72,19 +81,19 @@ export class RotaPage implements OnInit {
         travelMode: 'DRIVING',
         waypoints: [
           {
-            location: '-20.8410383,-41.1147429',
+            location: '-20.845679,-41.1152898',
             stopover: true
           },
           {
-            location: '-20.8364831,-41.1137687',
+            location: '-20.8494766,-41.1116471',
             stopover: true
           },
           {
-            location: '20.8355766,-41.1138249',
+            location: '-20.8473118,-41.1390176',
             stopover: true
           },
           {
-            location: '-20.8383636,-41.1170321',
+            location: '-20.839695,-41.1224022',
             stopover: true
           }
         ],
@@ -95,207 +104,147 @@ export class RotaPage implements OnInit {
   }
 
   traceRoute(service: any, display: any, request: any) {
+    display.setMap(this.map);
     service.route(request, function (result, status) {
       if (status == 'OK') {
-        console.log(result.routes);
+        //console.log(result.routes);
         display.setDirections(result);
       }
     });
   }
 
-  buscaMatrixDistancia(){
+  calculoDaRota() {
 
-    let dtMatrix0 : DistanceMatrix = {
-      infoBusca : "",
-      foiOrigem : false,
-      foiDestino : false,
-      isEscritorio : false,
-      id_DistanceMatrix : null,
-      verticeOrigem : null,
-      verticeDestino : null,
-    };
+    this.entregaService.findByRota(this.listRotas[0].codRota).subscribe(response => {
+      this.listEntregas = response;
 
-    let dtMatrix1 : DistanceMatrix = {
-      infoBusca : "",
-      foiOrigem : false,
-      foiDestino : false,
-      isEscritorio : false,
-      id_DistanceMatrix : null,
-      verticeOrigem : null,
-      verticeDestino : null,
-    };
+      this.buscaMatrixDistancia(this.listEntregas);
 
-    let dtMatrix2 : DistanceMatrix = {
-      infoBusca : "",
-      foiOrigem : false,
-      foiDestino : false,
-      isEscritorio : false,
-      id_DistanceMatrix : null,
-      verticeOrigem : null,
-      verticeDestino : null,
-    };
-
-    let dtMatrix3 : DistanceMatrix = {
-      infoBusca : "",
-      foiOrigem : false,
-      foiDestino : false,
-      isEscritorio : false,
-      id_DistanceMatrix : null,
-      verticeOrigem : null,
-      verticeDestino : null,
-    };
-
-    let dtMatrix4 : DistanceMatrix = {
-      infoBusca : "",
-      foiOrigem : false,
-      foiDestino : false,
-      isEscritorio : false,
-      id_DistanceMatrix : null,
-      verticeOrigem : null,
-      verticeDestino : null,
-    };
-
-    let listDados: Array<DistanceMatrix> = [];
-
-    //setando manualmente as informações do escritorio
-    dtMatrix0.infoBusca = "-20.8266281,-41.1188745";
-    dtMatrix0.foiDestino = false;
-    dtMatrix0.foiOrigem = false;
-    dtMatrix0.isEscritorio = true;
-    dtMatrix0.id_DistanceMatrix = 0;
-    dtMatrix0.verticeOrigem = null;
-    dtMatrix0.verticeDestino = null;
-
-    //console.log(dtMatrix0);
-    listDados.push(dtMatrix0);
-    //console.log(listDados);
-
-    dtMatrix1.infoBusca = "-20.8271812,-41.1194278";
-    dtMatrix1.foiDestino = false;
-    dtMatrix1.foiOrigem = false;
-    dtMatrix1.isEscritorio = false;
-    dtMatrix1.id_DistanceMatrix = 1;
-    dtMatrix1.verticeOrigem = null;
-    dtMatrix1.verticeDestino = null;
-
-    listDados.push(dtMatrix1);
-    //console.log(listDados);
-
-    dtMatrix2.infoBusca = "-20.8356804,-41.113823";
-    dtMatrix2.foiDestino = false;
-    dtMatrix2.foiOrigem = false;
-    dtMatrix2.isEscritorio = false;
-    dtMatrix2.id_DistanceMatrix = 2;
-    dtMatrix2.verticeOrigem = null;
-    dtMatrix2.verticeDestino = null;
-
-    listDados.push(dtMatrix2);
-
-    dtMatrix3.infoBusca = "-20.8319439,-41.1144188";
-    dtMatrix3.foiDestino = false;
-    dtMatrix3.foiOrigem = false;
-    dtMatrix3.isEscritorio = false;
-    dtMatrix3.id_DistanceMatrix = 3;
-    dtMatrix3.verticeOrigem = null;
-    dtMatrix3.verticeDestino = null;
-
-    listDados.push(dtMatrix3);
-
-    dtMatrix4.infoBusca = "-20.8295166,-41.1168467";
-    dtMatrix4.foiDestino = false;
-    dtMatrix4.foiOrigem = false;
-    dtMatrix4.isEscritorio = false;
-    dtMatrix4.id_DistanceMatrix = 4;
-    dtMatrix4.verticeOrigem = null;
-    dtMatrix4.verticeDestino = null;
-
-    listDados.push(dtMatrix4);
-
-    //console.log(this.listDados.length);
-
-    let cont = 0;
-    let primeiroLoop = true;
-    //let listDadosAux = this.listDados;
-    //while(cont < this.listDados.length){
-
-      // let origens: String = "";
-      // let destinos: String = "";
-      // if(primeiroLoop){
-      //   origens = this.listDados[0].infoBusca;
-      //   destinos = this.listDados[1].infoBusca + ", " + this.listDados[2].infoBusca + ", " + this.listDados[3].infoBusca + ", " + this.listDados[4].infoBusca;
-      //   //console.log("primeiroLoop");
-      //   //console.log(origens);
-      //   //console.log(destinos);
-      //   primeiroLoop = false;
-      // }
-      const distanceMatrixOptions = {
-        origins: [ 
-          listDados[0].infoBusca
-        ],
-        destinations: [ 
-          listDados[1].infoBusca,
-          listDados[2].infoBusca,
-          listDados[3].infoBusca,
-          listDados[4].infoBusca
-        ],
-        travelMode: 'DRIVING'
-      };
-
-      this.distanceMatrixService.getDistanceMatrix(distanceMatrixOptions, function (result, status) {
-      if (status == 'OK') {
-        //console.log(result);
-        var menor = result.rows[0].elements[0].distance.value;
-        //console.log(result.rows[0].elements.length);
-        for(var i = 0; i < result.rows[0].elements.length; i++){
-          //console.log(result.rows[0].elements[i].distance.value);
-          if(menor > result.rows[0].elements[0].distance.value){
-            menor = result.rows[0].elements[0].distance.value;
+      if (this.listEntregas.length > 1) {
+        for (let i = 0; i < this.listEntregas.length; i++) {
+          if (i == 0) {
+            this.originPosition = new google.maps.LatLng(-20.8410106, -41.1169916);
+            this.destinationPosition = this.listEntregas[i].endereco.cep + this.listEntregas[i].endereco.rua + this.listEntregas[i].endereco.numero;
           }
+          else if (i > 0 && i < (this.listEntregas.length - 1)) {
+            this.originPosition = this.listEntregas[i - 1].endereco.cep + this.listEntregas[i - 1].endereco.rua + this.listEntregas[i - 1].endereco.numero;
+            this.destinationPosition = this.listEntregas[i].endereco.cep + this.listEntregas[i].endereco.rua + this.listEntregas[i].endereco.numero;
+          }
+          else if (i == (this.listEntregas.length - 1)) {
+            this.originPosition = this.listEntregas[i].endereco.cep + this.listEntregas[i].endereco.rua + this.listEntregas[i].endereco.numero;
+            this.destinationPosition = new google.maps.LatLng(-20.8410106, -41.1169916);
+          }
+
+          if (this.destinationPosition && this.originPosition) {
+            const request = {
+              // Pode ser uma coordenada (LatLng), uma string ou um lugar
+              origin: this.originPosition,
+              destination: this.destinationPosition,
+              travelMode: 'DRIVING',
+              provideRouteAlternatives: false
+            };
+            this.traceRoute(this.directionsService, new google.maps.DirectionsRenderer({ draggable: false }), request);
+          }
+
         }
-       //console.log(menor);
-       
-        
       }
-    })
+      else if (this.listEntregas.length == 1) {
+        // codificar aqui
+      }
+    },
+      error => { });
+  }
+
+  buscaMatrixDistancia(entregas: Entrega[]) {
+
+    for (let i = 0; i < entregas.length; i++) {
+      // if(i == 0){//verificar que é a primeira vez
+      //   let dadosMatrix: DistanceMatrix = {
+      //     infoBusca: "-20.8410106,-41.1169916",
+      //     foiOrigem: false,
+      //     foiDestino: false,
+      //     isEscritorio: true,
+      //     id_DistanceMatrix: null,
+      //     id_verticeOrigem: null,
+      //     id_verticeDestino: null,
+      //   };
+      //   this.listMatrix.push(dadosMatrix);
+      // }
+
+      let dadosMatrix: DistanceMatrix = {
+        infoBusca: entregas[i].endereco.cep + this.listEntregas[i].endereco.rua + this.listEntregas[i].endereco.numero,
+        foiOrigem: false,
+        foiDestino: false,
+        isEscritorio: false,
+        id_DistanceMatrix: entregas[i].codEntrega,
+        id_verticeOrigem: null,
+        id_verticeDestino: null,
+      };
+      this.listMatrix.push(dadosMatrix);
+    }
+
+    console.log(this.listMatrix);
 
 
+    let listDadosAux: Array<DistanceMatrix> = [];
+    let cont: number = 0;
+    let primeiroLoop = true;
+    let distanciaDados = {id: Number, ditancia: Number};
+    let vetDistancias = [];
+    while (cont < this.listMatrix.length) {
 
-      //cont++;
-    //}
+      let origem: String = "";
+      let destinos: String = "";
+      if (primeiroLoop) {
+        origem = "-20.8410106,-41.1169916";
+        primeiroLoop = false;
+        let distanceMatrixOptions;
+        for(let i = 0; i < this.listMatrix.length; i++){
+          distanceMatrixOptions = {
+            origins: [
+              origem
+            ],
+            destinations: [
+              this.listMatrix[i].infoBusca
+            ],
+            travelMode: 'DRIVING'
+          };
+          this.distanceMatrixService.getDistanceMatrix(distanceMatrixOptions, function (result, status) {
+            if (status == 'OK') {
+              console.log(result);
+              distanciaDados.id = this.listMatrix[i].id_DistanceMatrix;
+              //como fazer estruturas par a colocar os valores de distancia para ordenar e pegar o menor e atribuir como destino e pegar ele como proxima origem
+              // var menor = result.rows[0].elements[0].distance.value;
+              // //console.log(result.rows[0].elements.length);
+              // for (var i = 0; i < result.rows[0].elements.length; i++) {
+              //   //console.log(result.rows[0].elements[i].distance.value);
+              //   if (menor > result.rows[0].elements[0].distance.value) {
+              //     menor = result.rows[0].elements[0].distance.value;
+              //   }
+              // }
+              //console.log(menor);
+            }
+          })
+        }
 
-    
-    // const distanceMatrixOptions = {
+        
+      }else{
 
-    //   origins: [
-    //     "-20.8266281,-41.1188745"
-    //   ],
-    //   destinations: [
-    //     ,
-    //     ,
-    //     ,
-    //     ,
+      }
 
-    //   ],
-    //   travelMode: 'DRIVING'
-    // };
+      
 
-    // this.distanceMatrixService.getDistanceMatrix(distanceMatrixOptions, function (result, status) {
-    //   if (status == 'OK') {
-    //     var menor = result.rows[0].elements[0].distance.value;
-    //     //console.log(result.rows[0].elements.length);
-    //     for(var i = 0; i < result.rows[0].elements.length; i++){
-    //       //console.log(result.rows[0].elements[i].distance.value);
-    //       if(menor > result.rows[0].elements[0].distance.value){
-    //         menor = result.rows[0].elements[0].distance.value
-    //       }
-    //     }
-    //     //console.log(menor);
-    //   }
-    // })
+      cont++;
+    }
   }
 
   ngOnInit() {
     this.carregaMapa();
+
+    this.rotaService.findAll().subscribe(response => {
+      this.listRotas = response;
+    },
+      error => { });
   }
 
 }

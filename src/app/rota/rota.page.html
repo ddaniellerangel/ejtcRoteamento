@@ -8,5 +8,12 @@
 
 <ion-content padding>
   <div #map id="map"></div>
-  <div><ion-button (click)="calculateRoute()">Rota</ion-button></div>
+  <div>
+    <ion-list>
+      <ion-item *ngFor="let rota of listRotas">
+        <ion-label> {{ rota.nome }} de {{ rota.data }}</ion-label>
+      </ion-item>
+    </ion-list>
+    <ion-button (click)="calculoDaRota()">Rota</ion-button>
+  </div>
 </ion-content>
